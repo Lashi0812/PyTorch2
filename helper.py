@@ -26,6 +26,9 @@ def add_to_class(Class):
 
 # Base class for Data Module
 class DataModule:
+    def __init__(self,root="../data",num_workers=4) -> None:
+        self.root  = root
+        self.num_workers = num_workers 
     def get_dataloader(self, train: bool):
         raise NotImplementedError
 
