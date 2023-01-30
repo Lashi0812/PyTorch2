@@ -1,4 +1,4 @@
-# python inbuilt-libraires
+# python inbuilt-libraries
 from typing import Tuple, List, Dict
 from functools import partial
 from collections import defaultdict
@@ -28,7 +28,8 @@ def add_to_class(Class):
 class DataModule:
     def __init__(self,root="../data",num_workers=4) -> None:
         self.root  = root
-        self.num_workers = num_workers 
+        self.num_workers = num_workers
+
     def get_dataloader(self, train: bool):
         raise NotImplementedError
 
@@ -105,7 +106,7 @@ class Animate:
         return self.train_loss_line
 
     def animate(self,save:bool=False):
-        # print("[INFO] Entering Aimate ")
+        # print("[INFO] Entering Animate ")
         # print(hasattr(self, "trainer"))
         assert hasattr(self, "trainer"), "Plot is not prepared"
         self.anim = animation.FuncAnimation(
@@ -132,7 +133,7 @@ class Trainer:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
     def prepare_data(self, data: DataModule):
-        # print("[INFO] Entering Data Prerparaion")
+        # print("[INFO] Entering Data Preparation")
         self.train_dataloader = data.train_dataloader()
         self.val_dataloader = data.val_dataloader()
         self.num_train_batches = len(self.train_dataloader)
@@ -141,7 +142,7 @@ class Trainer:
         )
 
     def prepare_model(self,model:Module):
-        # print("[INFO] Entering Model Preparartion")
+        # print("[INFO] Entering Model Preparation")
         model.trainer = self
         self.model = model.to(self.device)
         
@@ -215,3 +216,16 @@ class Trainer:
                 batch_loss += loss
         avg_batch_loss = batch_loss / self.num_train_batches
         self.history["val_loss"].append(avg_batch_loss.cpu().item())
+
+def show_images(imgs,num_rows,num_cols,titles=None,scale=1.5):
+    """
+    Take the image in format fo [h,w,c]
+    """
+    figsize = (num_cols*scale,num_rows*scale)
+    _,axes = plt.subplots(nrows=num_rows,ncols=num_cols,figsize=figsize,layout="constrained")
+    for i ,(ax,img) in enumerate(zip(axes.ravel(),imgs)):
+        ax.imshow(img)
+        ax.axis("off")
+        if titles:
+            ax.set_title(titles[i])
+    return axes
