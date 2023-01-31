@@ -290,7 +290,7 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
 
 class Classifier(Module):
     def accuracy(self,y_logits, y):
-        acc_fn = Accuracy(task="multiclass",num_classes=self.num_outputs)
+        acc_fn = Accuracy(task="multiclass",num_classes=self.num_outputs).to(self.trainer.device)
         return acc_fn(y_logits, y)
 
     def step(self, batch: List)->Dict:
