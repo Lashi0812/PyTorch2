@@ -159,7 +159,7 @@ class Trainer:
         self.show_ani = show_ani
         self.verbose = verbose
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Running the model in {self.device}")
+        print(f"Training the model in {self.device}")
 
     def prepare_data(self, data: DataModule):
         if self.verbose:
