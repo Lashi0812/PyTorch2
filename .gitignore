@@ -1,2 +1,6 @@
 __pycache__/
 *.mp4
+data/
+.idea/
+*/.ipynb_checkpoints/
+
