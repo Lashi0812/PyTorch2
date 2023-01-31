@@ -78,7 +78,7 @@ class Animate:
         num_cols = 2 if plot_acc else 1
         self.verbose = verbose
         self.fig, self.axes = plt.subplots(
-            nrows=1, ncols=num_cols, figsize=(4 * num_cols, 3), layout="constrained"
+            nrows=1, ncols=num_cols, figsize=(4 * num_cols, 3), constrained_layout=True
         )
         self.line_dict = defaultdict(Line2D)
         # creating the line plot
@@ -159,6 +159,7 @@ class Trainer:
         self.show_ani = show_ani
         self.verbose = verbose
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Running the model in {self.device}")
 
     def prepare_data(self, data: DataModule):
         if self.verbose:
