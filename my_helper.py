@@ -1,7 +1,7 @@
 # python inbuilt-libraries
 from typing import Tuple, List, Dict
 from collections import defaultdict
-from functools import partial
+import os
 
 # torch
 import torch
@@ -28,7 +28,7 @@ def add_to_class(Class):
 
 # Base class for Data Module
 class DataModule:
-    def __init__(self, root="../data", num_workers=4) -> None:
+    def __init__(self, root="../data", num_workers=os.cpu_count()) -> None:
         self.root = root
         self.num_workers = num_workers
 
