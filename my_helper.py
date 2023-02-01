@@ -51,7 +51,7 @@ class Module(nn.Module):
         raise NotImplementedError
 
     def forward(self, x: torch.Tensor):
-        assert hasattr(self, "net")
+        assert hasattr(self, "net") ,"save the model in the variable 'net'"
         return self.net(x)
 
     def configure_optimizer(self):
@@ -71,6 +71,18 @@ class Module(nn.Module):
         loss = self.loss(y_logits, y)
         return dict(loss=loss)
 
+    def layer_summary(self,input_shape):
+        """Print the layer by doing the forward pass"""
+        X = torch.rand(size=input_shape)
+        assert hasattr(self,"net") ,"save the model in the variable 'net'"
+        for layer in self.net.children():
+            X = layer(X)
+            print(f'{layer.__class__.__name__:<15s} output shape :{tuple(X.shape)}')
+        
+    def apply_init(self,inputs,init=None):
+        self.forward(*inputs)
+        if init is not None:
+            self.net.apply(init)
 
 # animate class
 class Animate:
@@ -290,7 +302,7 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
 
 class Classifier(Module):
     def accuracy(self,y_logits, y):
-        acc_fn = Accuracy(task="multiclass",num_classes=self.num_outputs).to(self.trainer.device)
+        acc_fn = Accuracy(task="multiclass",num_classes=list(self.modules())[-1].out_features).to(self.trainer.device)
         return acc_fn(y_logits, y)
 
     def step(self, batch: List)->Dict:
