@@ -28,7 +28,7 @@ def add_to_class(Class):
 
 # Base class for Data Module
 class DataModule:
-    def __init__(self, root="../data", num_workers=os.cpu_count()) -> None:
+    def __init__(self, root="../data", num_workers=2) -> None:
         self.root = root
         self.num_workers = num_workers
 
