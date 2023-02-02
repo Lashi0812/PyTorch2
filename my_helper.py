@@ -7,6 +7,8 @@ import os
 import torch
 from torch import nn
 from torchmetrics import Accuracy
+from torchvision import datasets,transforms
+from torch.utils.data import DataLoader
 
 # numpy
 import numpy as np
@@ -322,3 +324,40 @@ class Classifier(Module):
     def loss(self, y_logits, y):
         loss_fn = nn.CrossEntropyLoss()
         return loss_fn(y_logits, y)
+
+
+class FashionMNIST(DataModule):
+    def __init__(self, batch_size: int = 64, resize=(28, 28)) -> None:
+        super().__init__()
+        self.batch_size = batch_size
+        self.resize = resize
+
+        transform = transforms.Compose(
+            [transforms.Resize(resize), transforms.ToTensor()]
+        )
+
+        self.train = datasets.FashionMNIST(
+            root=self.root, train=True, transform=transform,download=True
+        )
+        self.val = datasets.FashionMNIST(
+            root=self.root, train=False, transform=transform,download=True
+        )
+        self.classes = self.train.classes
+        self.class_to_idx = self.train.class_to_idx
+
+    def text_labels(self, indices: List):
+        return [self.classes[a] for a in indices]
+
+    def get_dataloader(self, train: bool):
+        data = self.train if train else self.val
+        return DataLoader(
+            dataset=data,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=train,
+        )
+    
+    def visualize(self,batch:Tuple,num_rows=1,num_cols=8):
+        X,y = batch
+        labels = self.text_labels(y)
+        show_images(X.squeeze(1),num_rows=num_rows,num_cols=num_cols,titles=labels)
