@@ -292,9 +292,13 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
     """
     figsize = (num_cols * scale, num_rows * scale)
     _, axes = plt.subplots(
-        nrows=num_rows, ncols=num_cols, figsize=figsize, layout="constrained"
+        nrows=num_rows, ncols=num_cols, figsize=figsize, constrained_layout=True
     )
     for i, (ax, img) in enumerate(zip(axes.ravel(), imgs)):
+        try:
+            img = img.detach().numpy()
+        except:
+            pass
         ax.imshow(img)
         ax.axis("off")
         if titles:
