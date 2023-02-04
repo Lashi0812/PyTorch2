@@ -34,6 +34,5 @@
   - No parameters to optimize, avoiding overfitting at this layer
   - Spatial information is summed out, making it more robust to spatial translations of the input
 - Global average pooling can be seen as a structural regularizer that enforces feature maps to be confidence maps of concepts, made possible by the mlpconv layers that make better approximations to the confidence maps than GLMs.
+![](image/2023-02-04-15-13-58.png)
 
-
-![](2023-02-04-15-13-58.png)
