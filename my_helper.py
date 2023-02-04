@@ -308,7 +308,7 @@ class Trainer:
         torch.save(self.model.state_dict(), path)
 
 
-def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
+def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5,cmap="gray"):
     """
     Take the image in format fo [h,w,c]
     """
@@ -321,7 +321,7 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
             img = img.detach().numpy()
         except:
             pass
-        ax.imshow(img)
+        ax.imshow(img,cmap=cmap)
         ax.axis("off")
         if titles:
             ax.set_title(titles[i])
@@ -396,20 +396,18 @@ def get_model_name(name: str):
     return f"{name}-{datetime.utcnow().time().replace(microsecond=0).isoformat()}.pth"
 
 
-def view_channel(img, kernel, conv, sigmoid, pool, title):
+def view_channel(img, kernel,*args):
+    intermediate_layers = [l.squeeze() for l in args]
     imgs = [
         img.squeeze(),
         kernel.squeeze(),
-        conv.squeeze(),
-        sigmoid.squeeze(),
-        pool.squeeze(),
+        *intermediate_layers
     ]
-    show_images(imgs, 1, 5)
-    plt.title(title)
+    title = [tuple(img.shape) for img in imgs]
+    show_images(imgs, 1, len(imgs),titles=title)
     plt.show()
 
-
-def visual_block(img, model, block_start, block_end, kernel_index, trainer):
+def visual_block(img, model, block_start, block_end, kernel_index,trainer,num_kernel_show=5,num_channel_show=5 ):
     """
     Help to view the the transformation the weighted layer
     """
@@ -419,15 +417,12 @@ def visual_block(img, model, block_start, block_end, kernel_index, trainer):
         layers.append(model.net[:i](img.to(trainer.device)).detach().cpu().numpy())
     # for l in layers:
     #     print(l.shape)
-    for filter_ in range(kernel.shape[0]):
-        for channel in range(kernel.shape[1]):
+    for filter_ in np.random.randint(0,kernel.shape[0],min(kernel.shape[0],num_kernel_show)):
+        for channel in np.random.randint(0,kernel.shape[1],min(kernel.shape[1],num_channel_show)):
             kernel_slice = np.s_[filter_, channel, :, :]
             img_slice = np.s_[filter_, :, :]
             view_channel(
                 img,
                 layers[0][kernel_slice],
-                layers[1][img_slice],
-                layers[2][img_slice],
-                layers[3][img_slice],
-                title=f"{filter_,channel}",
+                *[l[img_slice]for l in layers[1:]]               
             )
