@@ -318,7 +318,7 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5,cmap="gray"):
     )
     for i, (ax, img) in enumerate(zip(axes.ravel(), imgs)):
         try:
-            img = img.detach().numpy()
+            img = img.cpu().detach().numpy()
         except:
             pass
         ax.imshow(img,cmap=cmap)
