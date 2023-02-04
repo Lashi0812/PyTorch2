@@ -1,14 +1,15 @@
 # python inbuilt-libraries
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional
 from collections import defaultdict
-import datetime
+from pathlib import Path
+from datetime import datetime
 
 
 # torch
 import torch
 from torch import nn
 from torchmetrics import Accuracy
-from torchvision import datasets,transforms
+from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
 # numpy
@@ -54,7 +55,7 @@ class Module(nn.Module):
         raise NotImplementedError
 
     def forward(self, x: torch.Tensor):
-        assert hasattr(self, "net") ,"save the model in the variable 'net'"
+        assert hasattr(self, "net"), "save the model in the variable 'net'"
         return self.net(x)
 
     def configure_optimizer(self):
@@ -74,18 +75,19 @@ class Module(nn.Module):
         loss = self.loss(y_logits, y)
         return dict(loss=loss)
 
-    def layer_summary(self,input_shape):
+    def layer_summary(self, input_shape):
         """Print the layer by doing the forward pass"""
         X = torch.rand(size=input_shape)
-        assert hasattr(self,"net") ,"save the model in the variable 'net'"
+        assert hasattr(self, "net"), "save the model in the variable 'net'"
         for layer in self.net.children():
             X = layer(X)
-            print(f'{layer.__class__.__name__:<15s} output shape :{tuple(X.shape)}')
-        
-    def apply_init(self,inputs,init=None):
+            print(f"{layer.__class__.__name__:<15s} output shape :{tuple(X.shape)}")
+
+    def apply_init(self, inputs, init=None):
         self.forward(*inputs)
         if init is not None:
             self.net.apply(init)
+
 
 # animate class
 class Animate:
@@ -167,12 +169,18 @@ class Animate:
 # Trainer Class
 class Trainer:
     def __init__(
-        self, max_epochs, show_ani=False, save_ani=False, verbose: bool = False
+        self,
+        max_epochs,
+        show_ani=False,
+        save_ani=False,
+        model_save_path: Optional[Path] = None,
+        verbose: bool = False,
     ) -> None:
         self.max_epochs = max_epochs
         self.save_ani = save_ani
         self.show_ani = show_ani
         self.verbose = verbose
+        self.model_save_path = model_save_path
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Training the model in {self.device}")
 
@@ -227,6 +235,9 @@ class Trainer:
             self.ani_plot.update(self.max_epochs)
 
             plt.show()
+
+        if self.model_save_path:
+            self.save_model(self.model_save_path, self.model.__class__.__qualname__)
 
     def fit_epoch(self):
         if self.verbose:
@@ -286,6 +297,17 @@ class Trainer:
                 (batch_dict[key] / self.num_val_batches).cpu().item()
             )
 
+    def save_model(self, model_save_path: Path, model_name):
+        """Save the model state dict to reuse it."""
+        model_name_time = get_model_name(model_name)
+        # make dir for current data
+        path_dir = Path(model_save_path / datetime.utcnow().date().isoformat()).mkdir(
+            exist_ok=True, parents=True
+        )
+        path = path_dir / model_name_time
+        print(f"[Info] Saving the model at {path}")
+        torch.save(self.model.state_dict(), path)
+
 
 def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
     """
@@ -308,17 +330,19 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
 
 
 class Classifier(Module):
-    def accuracy(self,y_logits, y):
-        acc_fn = Accuracy(task="multiclass",num_classes=list(self.modules())[-1].out_features).to(self.trainer.device)
+    def accuracy(self, y_logits, y):
+        acc_fn = Accuracy(
+            task="multiclass", num_classes=y_logits.shape[-1]
+        ).to(self.trainer.device)
         return acc_fn(y_logits, y)
 
-    def step(self, batch: List)->Dict:
+    def step(self, batch: List) -> Dict:
         X, y = batch
         # forward pass
         y_logits = self(X).squeeze(1)
         loss = self.loss(y_logits, y)
         acc = self.accuracy(y_logits, y)
-        return dict(loss=loss,acc=acc)
+        return dict(loss=loss, acc=acc)
 
     def validation_step(self, batch: List):
         return self.step(batch)
@@ -342,10 +366,10 @@ class FashionMNIST(DataModule):
         )
 
         self.train = datasets.FashionMNIST(
-            root=self.root, train=True, transform=transform,download=True
+            root=self.root, train=True, transform=transform, download=True
         )
         self.val = datasets.FashionMNIST(
-            root=self.root, train=False, transform=transform,download=True
+            root=self.root, train=False, transform=transform, download=True
         )
         self.classes = self.train.classes
         self.class_to_idx = self.train.class_to_idx
@@ -361,11 +385,50 @@ class FashionMNIST(DataModule):
             num_workers=self.num_workers,
             shuffle=train,
         )
-    
-    def visualize(self,batch:Tuple,num_rows=1,num_cols=8):
-        X,y = batch
-        labels = self.text_labels(y)
-        show_images(X.squeeze(1),num_rows=num_rows,num_cols=num_cols,titles=labels)
 
-def get_model_name(name:str):
-    return f"{name}-{datetime.datetime.utcnow().replace(microsecond=0).isoformat()}.pth"
+    def visualize(self, batch: Tuple, num_rows=1, num_cols=8):
+        X, y = batch
+        labels = self.text_labels(y)
+        show_images(X.squeeze(1), num_rows=num_rows, num_cols=num_cols, titles=labels)
+
+
+def get_model_name(name: str):
+    """Add the iso time to model name and the extension at end"""
+    return f"{name}-{datetime.utcnow().time().replace(microsecond=0).isoformat()}.pth"
+
+
+def view_channel(img, kernel, conv, sigmoid, pool, title):
+    imgs = [
+        img.squeeze(),
+        kernel.squeeze(),
+        conv.squeeze(),
+        sigmoid.squeeze(),
+        pool.squeeze(),
+    ]
+    show_images(imgs, 1, 5)
+    plt.title(title)
+    plt.show()
+
+
+def visual_block(img, model, block_start, block_end, kernel_index, trainer):
+    """
+    Help to view the the transformation the weighted layer
+    """
+    kernel = list(model.parameters())[kernel_index]
+    layers = [kernel.detach().cpu().numpy()]
+    for i in range(block_start, block_end):
+        layers.append(model.net[:i](img.to(trainer.device)).detach().cpu().numpy())
+    # for l in layers:
+    #     print(l.shape)
+    for filter_ in range(kernel.shape[0]):
+        for channel in range(kernel.shape[1]):
+            kernel_slice = np.s_[filter_, channel, :, :]
+            img_slice = np.s_[filter_, :, :]
+            view_channel(
+                img,
+                layers[0][kernel_slice],
+                layers[1][img_slice],
+                layers[2][img_slice],
+                layers[3][img_slice],
+                title=f"{filter_,channel}",
+            )
