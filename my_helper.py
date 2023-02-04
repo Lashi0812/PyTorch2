@@ -1,7 +1,8 @@
 # python inbuilt-libraries
 from typing import Tuple, List, Dict
 from collections import defaultdict
-import os
+import datetime
+
 
 # torch
 import torch
@@ -365,3 +366,6 @@ class FashionMNIST(DataModule):
         X,y = batch
         labels = self.text_labels(y)
         show_images(X.squeeze(1),num_rows=num_rows,num_cols=num_cols,titles=labels)
+
+def get_model_name(name:str):
+    return f"{name}-{datetime.datetime.utcnow().replace(microsecond=0).isoformat()}.pth"
