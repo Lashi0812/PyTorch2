@@ -301,10 +301,9 @@ class Trainer:
         """Save the model state dict to reuse it."""
         model_name_time = get_model_name(model_name)
         # make dir for current data
-        path_dir = Path(model_save_path / datetime.utcnow().date().isoformat()).mkdir(
-            exist_ok=True, parents=True
-        )
-        path = path_dir / model_name_time
+        cur_date = datetime.utcnow().date().isoformat()
+        Path(model_save_path /cur_date ).mkdir(exist_ok=True, parents=True)
+        path = model_save_path/cur_date/ model_name_time
         print(f"[Info] Saving the model at {path}")
         torch.save(self.model.state_dict(), path)
 
