@@ -393,7 +393,7 @@ class FashionMNIST(DataModule):
 
 def get_model_name(name: str):
     """Add the iso time to model name and the extension at end"""
-    return f'{name}-{datetime.utc().time().replace(microsecond=0).isoformat().replace(":","")}.pth'
+    return f'{name}-{datetime.utcnow().time().replace(microsecond=0).isoformat().replace(":","")}.pth'
 
 
 def view_channel(img, kernel,*args):
