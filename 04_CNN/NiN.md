@@ -1,3 +1,4 @@
+[Original Paper Network In Network](https://arxiv.org/pdf/1312.4400.pdf)
 # Introduction
 - CNNs consist of alternating convolutional layers and pooling layers.
 - The convolution filter in CNN is a GLM (generalized Linear Model) that performs low-level abstraction.

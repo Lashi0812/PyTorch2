@@ -1,3 +1,4 @@
+[Original Paper -- VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION](https://arxiv.org/pdf/1409.1556.pdf)
 # Introduction
 - There have been attempts to improve the original ConvNet architecture to achieve better accuracy, including smaller receptive window size, smaller stride of the first convolutional layer, and training the network densely over multiple scales.
 - ==This paper addresses the depth aspect of ConvNet architecture design by steadily increasing the depth of the network by adding more convolutional layers.==
