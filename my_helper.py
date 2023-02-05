@@ -305,6 +305,7 @@ class Trainer:
         Path(model_save_path /cur_date ).mkdir(exist_ok=True, parents=True)
         path = model_save_path/cur_date/ model_name_time
         print(f"[Info] Saving the model at {path}")
+        self.save_path = str(path)
         torch.save(self.model.state_dict(), path)
 
 
