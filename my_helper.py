@@ -232,6 +232,10 @@ class Trainer:
         else:
             for epoch in tqdm(range(self.max_epochs)):
                 self.fit_epoch()
+                if self.verbose:
+                    print(f'At end {epoch} Epoch - Training Loss {self.history["train_loss"][-1]}| \
+                        Training Loss {self.history["val_loss"][-1]}')
+                    
             self.ani_plot.update(self.max_epochs)
 
             plt.show()
@@ -250,51 +254,51 @@ class Trainer:
         self.val_step()
 
     def train_step(self):
-        if self.verbose:
-            print("[INFO] Entered into the training step")
-        batch_dict = defaultdict(int)
+        batch_dict = defaultdict(list)
         # put the model in training mode
         self.model.train()
         # Loop through the train dataloader
-        for batch in self.train_dataloader:
+        for batch_idx,batch in enumerate(self.train_dataloader):
             # do forward and find the loss
             result = self.model.training_step(self.prepare_batch(batch))
             loss = result["loss"]
-            batch_dict["loss"] += loss
+            batch_dict["loss"].append(loss)
             if self._has_accuracy:
-                batch_dict["acc"] += result["acc"]
+                batch_dict["acc"].append( result["acc"])
             # set the zero grad
             self.optim.zero_grad()
             with torch.no_grad():
                 # back propagate the loss
                 loss.backward()
                 self.optim.step()
+            if self.verbose and batch_idx % (self.num_train_batches//5) == 0:
+                print(f'\tBatch {batch_idx} - Training Loss {batch_dict["loss"][-1]}')
         # print(batch_dict.keys())
         for key in batch_dict.keys():
             # print(key)
             self.history[f"train_{key}"].append(
-                (batch_dict[key] / self.num_train_batches).cpu().item()
+                (sum(batch_dict[key]) / self.num_train_batches).cpu().item()
             )
 
     def val_step(self):
-        if self.verbose:
-            print("[INFO] Entered into the Val step")
         # put the model in eval mode
-        batch_dict = defaultdict(int)
+        batch_dict = defaultdict(list)
         self.model.eval()
         # Loop through the val dataloader
-        for batch in self.val_dataloader:
+        for batch_idx,batch in enumerate(self.val_dataloader):
             with torch.inference_mode():
                 result = self.model.validation_step(self.prepare_batch(batch))
-                batch_dict["loss"] += result["loss"]
+                batch_dict["loss"].append( result["loss"])
                 if self._has_accuracy:
-                    batch_dict["acc"] += result["acc"]
+                    batch_dict["acc"].append( result["acc"])
+            if self.verbose and batch_idx % (self.num_train_batches//5) == 0:
+                print(f'\tBatch {batch_idx} - Validation Loss {batch_dict["loss"][-1]}')
 
         # print("test",batch_dict.keys())
         for key in batch_dict.keys():
             # print("test",key)
             self.history[f"val_{key}"].append(
-                (batch_dict[key] / self.num_val_batches).cpu().item()
+                (sum(batch_dict[key]) / self.num_val_batches).cpu().item()
             )
 
     def save_model(self, model_save_path: Path, model_name):
