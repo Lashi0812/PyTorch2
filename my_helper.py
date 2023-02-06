@@ -233,8 +233,8 @@ class Trainer:
             for epoch in tqdm(range(self.max_epochs)):
                 self.fit_epoch()
                 if self.verbose:
-                    print(f'At end {epoch} Epoch - Training Loss {self.history["train_loss"][-1]}| \
-                        Training Loss {self.history["val_loss"][-1]}')
+                    print(f'At end Epoch {epoch}\{self.max_epochs}  - Training Loss {self.history["train_loss"][-1]}|\
+                        Validation Loss {self.history["val_loss"][-1]}')
                     
             self.ani_plot.update(self.max_epochs)
 
@@ -272,7 +272,7 @@ class Trainer:
                 loss.backward()
                 self.optim.step()
             if self.verbose and batch_idx % (self.num_train_batches//5) == 0:
-                print(f'\tBatch {batch_idx} - Training Loss {batch_dict["loss"][-1]}')
+                print(f'\tBatch {batch_idx}\{self.num_train_batches} - Training Loss {batch_dict["loss"][-1]}')
         # print(batch_dict.keys())
         for key in batch_dict.keys():
             # print(key)
@@ -291,8 +291,8 @@ class Trainer:
                 batch_dict["loss"].append( result["loss"])
                 if self._has_accuracy:
                     batch_dict["acc"].append( result["acc"])
-            if self.verbose and batch_idx % (self.num_train_batches//5) == 0:
-                print(f'\tBatch {batch_idx} - Validation Loss {batch_dict["loss"][-1]}')
+            if self.verbose and batch_idx % (self.num_val_batches//5) == 0:
+                print(f'\tBatch {batch_idx}\{self.num_val_batches} - Validation Loss {batch_dict["loss"][-1]}')
 
         # print("test",batch_dict.keys())
         for key in batch_dict.keys():
